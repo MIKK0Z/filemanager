@@ -1,0 +1,23 @@
+<div class="flex flex-col gap-4">
+    <table class="table table-zebra">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>icon</th>
+                <th>name</th>
+                <th>size</th>
+                <th>type</th>
+                <th>show</th>
+                <th>info</th>
+                <th>download</th>
+                <th>delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each savedFiles}}
+                {{> fileRow file=this}}
+            {{/each}}
+        </tbody>
+    </table>
+    <a class="btn btn-sm btn-primary mx-auto" href="/reset">reset</a>
+</div>

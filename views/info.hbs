@@ -1,0 +1,14 @@
+<div>
+    <h2 class="w-fit mx-auto">Michał Maślanka 3pa (2024)</h2>
+
+    {{#if file}}
+        <div class="space-y-2">
+            <p><span class="badge badge-lg badge-neutral badge-outline">id</span> {{file.id}}</p>
+            <p><span class="badge badge-lg badge-neutral badge-outline">name</span> {{file.file.name}}</p>
+            <p><span class="badge badge-lg badge-neutral badge-outline">path</span> {{file.file.path}}</p>
+            <p><span class="badge badge-lg badge-neutral badge-outline">size</span> {{file.file.size}}</p>
+            <p><span class="badge badge-lg badge-neutral badge-outline">type</span> {{file.file.type}}</p>
+            <p><span class="badge badge-lg badge-neutral badge-outline">savedate</span> {{file.saveDate}}</p>
+        </div>
+    {{/if}}
+</div>

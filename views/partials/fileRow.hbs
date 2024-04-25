@@ -1,0 +1,23 @@
+<tr>
+    <td>{{file.id}}</td>
+    <td>
+        <div class="avatar w-6">
+            <img src="/gfx/icons/{{getFileIcon file.file.type}}.png" alt={{getFileIcon file.file.type}} />
+        </div>
+    </td>
+    <td>{{file.file.name}}</td>
+    <td>{{file.file.size}}</td>
+    <td>{{file.file.type}}</td>
+    <td>
+        <a class="btn btn-sm btn-primary" href="/show/?id={{file.id}}">show</a>
+    </td>
+    <td>
+        <a class="btn btn-sm btn-primary" href="/info/?id={{file.id}}">info</a>
+    </td>
+    <td>
+        <a class="btn btn-sm btn-primary" href="/download/?id={{file.id}}">download</a>
+    </td>
+    <td>
+        <a class="btn btn-sm btn-error" href="/delete/?id={{file.id}}">delete</a>
+    </td>
+</tr>
