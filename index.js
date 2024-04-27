@@ -26,8 +26,8 @@ app.get('/reset', (req, res) => {
 app.get('/show', (req, res) => {
     const { id: reqID } = req.query;
     const file = savedFiles.filter(({ id }) => id === parseInt(reqID))[0];
-    res.sendFile(file.file.path);
     
+    res.sendFile(file.file.path);
 })
 
 app.get('/info', (req, res) => {
