@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "tw": "pnpm dlx tailwindcss -i ./static/styles/input.css -o ./static/styles/output.css --watch"
+    "tw": "pnpm dlx tailwindcss -i ./static/styles/input.css -o ./static/styles/output.css"
   },
   "keywords": [],
   "author": "",

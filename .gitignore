@@ -1,4 +1,4 @@
 /node_modules
 /static/styles/output.css
-/static/upload
+/static/upload/*
 pnpm-lock.yaml
