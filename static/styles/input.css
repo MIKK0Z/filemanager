@@ -1,3 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+    font-family: 'Material Icons';
+    src: url('./../fonts/material-icons-latin-400-normal.woff2');
+}
+
+@layer utilities {
+    .icon {
+        font-family: 'Material Icons', sans-serif;
+    }
+}

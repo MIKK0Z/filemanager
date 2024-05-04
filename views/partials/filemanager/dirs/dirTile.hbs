@@ -1,0 +1,30 @@
+<div class="border-2 p-4 rounded-box">
+    <div class="flex justify-between gap-2">
+        <img src="/gfx/icons/dir.png" class="avatar w-8" alt="skibidi" />
+        <button class="icon text-2xl" onclick="deleteDir{{name}}Dialog.showModal()">delete</button>
+    </div>
+    <div>
+        <p class="text-center">[{{truncate name}}]</p>
+    </div>
+</div>
+
+<dialog id="deleteDir{{name}}Dialog" class="modal">
+    <div class="modal-box">
+		<h3 class="font-bold text-lg">Are you sure you want to remove this directory?</h3>
+        <p class="mt-2">{{name}}</p>
+		<div class="modal-action">
+			<form method="dialog">
+				<button class="btn">cancel</button>
+			</form>
+			<form method="POST" action="/removeDir">
+                <input type="hidden" name="dirName" value={{name}}>
+				<button type="submit" class="btn btn-error w-full">
+					yes
+				</button>
+			</form>
+		</div>
+	</div>
+	<form method="dialog" class="modal-backdrop">
+		<button>close</button>
+	</form>
+</dialog>
