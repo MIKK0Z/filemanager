@@ -3,6 +3,7 @@ import hbs from 'express-handlebars';
 import formidable from 'formidable';
 import path from 'path';
 import fs from 'fs/promises';
+import fsSync from 'fs';
 import mime from 'mime-types';
 
 const PORT = 3000;
@@ -15,6 +16,10 @@ app.use(express.static('static'));
 app.use(express.urlencoded({
     extended: true,
 }))
+
+if (!fsSync.existsSync(uploadPath)) {
+    await fs.mkdir(uploadPath);
+}
 
 const asyncFilter = async (arr, predicate) => {
     const results = await Promise.all(arr.map(predicate));
@@ -120,7 +125,7 @@ app.post('/upload', (req, res) => {
     form.multiples = true;
     form.parse(req, (_err, _fields, { files: uploadContent }) => {
         const uploadedFiles = Array.isArray(uploadContent) ? [...uploadContent] : [uploadContent];
-        
+
         uploadedFiles.forEach(async (file) => {
             const fileName = await getNewFileName(file.name);
             const newFilePath = path.join(uploadPath, fileName);
