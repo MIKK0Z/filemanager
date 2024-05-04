@@ -71,8 +71,14 @@ app.get('/', (req, res) => {
 })
 
 app.get('/filemanager', async (req, res) => {
+    const currentDir = req.query.name ?? '';
+
+    const subDirs = currentDir.split(path.sep);
+    subDirs.shift();
+
     const dirs = await getDirs();
     const files = await getFiles();
+
     res.render('filemanager.hbs', { dirs, files });
 })
 

@@ -4,7 +4,9 @@
         <button class="icon text-2xl" onclick="deleteDir{{name}}Dialog.showModal()">delete</button>
     </div>
     <div>
-        <p class="text-center">[{{truncate name}}]</p>
+		<a href="/filemanager?name=/{{name}}" class="link link-hover">
+			<p class="text-center">[{{truncate name}}]</p>
+		</a>
     </div>
 </div>
 
