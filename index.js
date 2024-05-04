@@ -1,11 +1,16 @@
-const express = require('express');
-const hbs= require('express-handlebars');
-const formidable = require('formidable');
-const path = require('path');
+import express from 'express';
+import hbs from 'express-handlebars';
+import formidable from 'formidable';
+import path from 'path';
+import fs from 'fs';
+
 const PORT = 3000;
+const __dirname = import.meta.dirname;
 
 const app = express();
 app.use(express.static('static'));
+
+// gyatt
 
 let savedFiles = [];
 
@@ -14,7 +19,7 @@ app.get('/', (req, res) => {
 })
 
 app.get('/filemanager', (req, res) => {
-    res.render('filemanager.hbs', { savedFiles });
+    res.render('filemanager2.hbs', { savedFiles });
 })
 
 app.get('/reset', (req, res) => {
@@ -72,9 +77,8 @@ app.post('/', (req, res) => {
                 saveDate: Date.now(),
             })
         }
-        
 
-        res.render('upload.hbs');
+        res.redirect('/filemanager');
     })
 })
 
