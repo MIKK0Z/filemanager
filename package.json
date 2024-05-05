@@ -5,7 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "tw": "pnpm dlx tailwindcss -i ./static/styles/input.css -o ./static/styles/output.css --watch"
+    "tw": "pnpm dlx tailwindcss -i ./static/styles/input.css -o ./static/styles/output.css --watch",
+    "npmtw": "npx tailwindcss -i ./static/styles/input.css -o ./static/styles/output.css --watch"
   },
   "keywords": [],
   "author": "",
