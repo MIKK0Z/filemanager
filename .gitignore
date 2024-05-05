@@ -3,3 +3,4 @@
 /static/upload/*
 /upload/*
 pnpm-lock.yaml
+package-lock.json
