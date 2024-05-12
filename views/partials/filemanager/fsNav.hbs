@@ -1,7 +1,8 @@
 <div class="text-sm breadcrumbs">
     <ul>
         <li><a href="/filemanager">Home</a></li>
-        <li><a href="/filemanager">asd</a></li>
-        <li><a href="/filemanager">qwe</a></li>
+        {{#each subDirs}}
+            <li><a href="/filemanager?name={{this.link}}">{{this.name}}</a></li>
+        {{/each}}
     </ul>
 </div>

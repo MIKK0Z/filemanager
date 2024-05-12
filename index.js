@@ -3,7 +3,7 @@ import hbs from 'express-handlebars';
 import formidable from 'formidable';
 import path from 'path';
 import fs from 'fs/promises';
-import fsSync from 'fs';
+import { existsSync } from "fs";
 import mime from 'mime-types';
 
 const PORT = 3000;
@@ -16,8 +16,9 @@ app.use(express.static('static'));
 app.use(express.urlencoded({
     extended: true,
 }))
+app.use(express.json());
 
-if (!fsSync.existsSync(uploadPath)) {
+if (!existsSync(uploadPath)) {
     await fs.mkdir(uploadPath);
 }
 
@@ -27,15 +28,20 @@ const asyncFilter = async (arr, predicate) => {
     return arr.filter((_v, index) => results[index]);
 }
 
-const getUploadDirContent = async () => {
-    return await fs.readdir(uploadPath);
+const getUploadDirContent = async (currentPath) => {
+    return await fs.readdir(currentPath);
 }
 
-const getDirs = async () => {
-    const uploadDirContent = await getUploadDirContent();
+const getCurrentPath = (currentDir) => {
+    return path.join(uploadPath, ...(currentDir ?? '').split('/'));
+}
+
+const getDirs = async (currentDir) => {
+    const currentPath = getCurrentPath(currentDir);
+    const uploadDirContent = await getUploadDirContent(currentPath);
 
     const dirs = await asyncFilter(uploadDirContent, async (element) => {
-        const elementPath = path.join(uploadPath, element);
+        const elementPath = path.join(currentPath, element);
         const stats = await fs.lstat(elementPath);
         return stats.isDirectory();
     })
@@ -43,11 +49,12 @@ const getDirs = async () => {
     return dirs;
 }
 
-const getFiles = async () => {
-    const uploadDirContent = await getUploadDirContent();
+const getFiles = async (currentDir) => {
+    const currentPath = getCurrentPath(currentDir);
+    const uploadDirContent = await getUploadDirContent(currentPath);
 
     const files = await asyncFilter(uploadDirContent, async (element) => {
-        const elementPath = path.join(uploadPath, element);
+        const elementPath = path.join(currentPath, element);
         const stats = await fs.lstat(elementPath);
         return stats.isFile();
     })
@@ -55,9 +62,9 @@ const getFiles = async () => {
     return files;
 }
 
-const getNewFileName = async (originalFileName) => {
+const getNewFileName = async (originalFileName, currentDir) => {
     let { name: tmpFileName, ext } = path.parse(originalFileName);
-    const existingFiles = await getFiles();
+    const existingFiles = await getFiles(currentDir);
 
     while (existingFiles.includes(`${tmpFileName}${ext}`)) {
         tmpFileName = `${tmpFileName}_copy_${Date.now()}`;
@@ -66,20 +73,42 @@ const getNewFileName = async (originalFileName) => {
     return `${tmpFileName}${ext}`;
 }
 
+const getSubDirs = (currentDir) => {
+    if (currentDir === '/') {
+        return [];
+    }
+
+    const subDirsNames = currentDir.split('/');
+    subDirsNames.shift();
+
+    const subDirs = subDirsNames.map((name, i) => {
+        return {
+            name,
+            link: `${subDirsNames.slice(0, i).map(prevName => `/${prevName}`).join('')}/${name}`,
+        };
+    });
+
+    return subDirs;
+}
+
 app.get('/', (req, res) => {
     res.redirect('/filemanager');
 })
 
 app.get('/filemanager', async (req, res) => {
-    const currentDir = req.query.name ?? '';
+    const currentDir = req.query.name ?? '/';
+    const subDirs = getSubDirs(currentDir);
 
-    const subDirs = currentDir.split(path.sep);
-    subDirs.shift();
+    const dirs = (await getDirs(currentDir)).map((name, i) => {
+        return {
+            name,
+            // link: `/${name}`,
+            link: `${currentDir}${currentDir === '/' ? '' : '/'}${name}`
+        };
+    });
+    const files = await getFiles(currentDir);
 
-    const dirs = await getDirs();
-    const files = await getFiles();
-
-    res.render('filemanager.hbs', { dirs, files });
+    res.render('filemanager.hbs', { dirs, files, subDirs, currentDir, isHome: currentDir === '/' });
 })
 
 // app.get('/show', (req, res) => {
@@ -99,32 +128,40 @@ app.get('/filemanager', async (req, res) => {
 
 
 app.post('/newDir', async (req, res) => {
-    const { body: { dirName } } = req;
+    const { body: { dirName, currentDir } } = req;
     let tmpDirName = dirName;
 
-    const existingDirs = await getDirs();
+    const existingDirs = await getDirs(currentDir);
+    const currentPath = getCurrentPath(currentDir);
 
     while (existingDirs.includes(tmpDirName)) {
         tmpDirName = `${dirName}_copy_${Date.now()}`;
     }
 
-    const newDirPath = path.join(uploadPath, tmpDirName);
+    const newDirPath = path.join(currentPath, tmpDirName);
     await fs.mkdir(newDirPath);
 
-    res.redirect('/filemanager');
+    const urlName = newDirPath.split('upload')[1]?.split(path.sep)?.join('/') ?? '/';
+
+    res.redirect(`/filemanager?name=${urlName}`);
 })
 
 app.post('/newFile', async (req, res) => {
-    const { body: { fileName } } = req;
-    const newFileName = await getNewFileName(fileName);
+    const { body: { fileName, currentDir } } = req;
+    const newFileName = await getNewFileName(fileName, currentDir);
 
-    const newFilePath = path.join(uploadPath, newFileName);
+    const currentPath = getCurrentPath(currentDir);
+    const newFilePath = path.join(currentPath, newFileName);
     await fs.writeFile(newFilePath, '');
 
-    res.redirect('/filemanager');
+    const urlName = currentPath.split('upload')[1]?.split(path.sep)?.join('/') ?? '/';
+
+    res.redirect(`/filemanager?name=${urlName}`);
 })
 
 app.post('/upload', (req, res) => {
+    console.log(req)
+
     let form = formidable({});
     form.uploadDir = uploadPath;
     form.keepExtensions = true;
@@ -160,6 +197,26 @@ app.post('/removeFile', async (req, res) => {
     res.redirect('/filemanager');
 })
 
+app.post('/changeDirName', async (req, res) => {
+    const { body: { dirName, currentDir } } = req;
+
+    let tmpDirName = dirName;
+
+    const parentDir = currentDir.split('/').slice(0, currentDir.split('/').length - 1).join('/');
+
+    const existingDirs = await getDirs(parentDir);
+    const parentPath = getCurrentPath(parentDir);
+    const currentPath = getCurrentPath(currentDir);
+
+    while (existingDirs.includes(tmpDirName)) {
+        tmpDirName = `${dirName}_copy_${Date.now()}`;
+    }
+
+    const newDirPath = path.join(parentPath, tmpDirName);
+    await fs.rename(currentPath, newDirPath);
+
+    res.redirect(`/filemanager?name=${newDirPath.split('upload')[1]?.split(path.sep)?.join('/') ?? '/'}`);
+})
 
 app.set('views', path.join(__dirname, 'views'));
 app.engine('hbs', hbs({

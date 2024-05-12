@@ -2,9 +2,8 @@
     {{> filemanager/upload}}
     <div class="divider divider-horizontal"></div>
     <div class="flex-1 flex flex-col gap-4">
-        {{> filemanager/fsNav}}
+        {{> filemanager/fsNav subDirs=subDirs}}
         {{> filemanager/dirs/dirs dirs=dirs}}
-        {{!-- <div class="divider"></div> --}}
         {{> filemanager/files/files files=files}}
     </div>
 </div>

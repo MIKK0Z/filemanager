@@ -5,6 +5,9 @@
 	<button type="button" class="btn btn-neutral w-full" onclick="newFileDialog.showModal()">
 		new file
 	</button>
+	<button type="button" class="btn btn-neutral w-full" onclick="changeDirDialog.showModal()" {{#if isHome}} disabled {{/if}}>
+		change dir name
+	</button>
 	<form method="POST" action="/upload" enctype="multipart/form-data" class="form-control gap-2">
 		<input
 			type="file"
@@ -14,6 +17,7 @@
 			class="file-input file-input-bordered"
 			onchange="onUploadChange(this.files.length)"
 		/>
+		<input type="hidden" name="currentDir" value={{currentDir}}>
 		<button type="submit" class="btn btn-outline" id="uploadButton" disabled>
 			upload
 		</button>
@@ -29,6 +33,7 @@
 				<button class="btn">cancel</button>
 			</form>
 			<form method="POST" action="/newDir" id="newDir">
+				<input type="hidden" name="currentDir", value={{currentDir}}>
 				<button type="submit" class="btn btn-neutral w-full">
 					create
 				</button>
@@ -49,8 +54,30 @@
 				<button class="btn">cancel</button>
 			</form>
 			<form method="POST" action="/newFile" id="newFile">
+				<input type="hidden" name="currentDir", value={{currentDir}}>
 				<button type="submit" class="btn btn-neutral w-full">
 					create
+				</button>
+			</form>
+		</div>
+	</div>
+	<form method="dialog" class="modal-backdrop">
+		<button>close</button>
+	</form>
+</dialog>
+
+<dialog id="changeDirDialog" class="modal">
+	<div class="modal-box">
+		<h3 class="font-bold text-lg">Change dir name:</h3>
+		<input type="text" class="input input-bordered w-full mt-2" name="dirName" form="changeDir">
+		<div class="modal-action">
+			<form method="dialog">
+				<button class="btn">cancel</button>
+			</form>
+			<form method="POST" action="/changeDirName" id="changeDir">
+				<input type="hidden" name="currentDir", value={{currentDir}}>
+				<button type="submit" class="btn btn-neutral w-full">
+					change
 				</button>
 			</form>
 		</div>
