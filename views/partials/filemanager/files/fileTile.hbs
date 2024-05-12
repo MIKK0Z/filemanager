@@ -1,14 +1,14 @@
 <div class="border-2 p-4 rounded-box">
     <div class="flex justify-between gap-2">
         <img src="/gfx/icons/{{getFileIcon name}}.png" class="avatar w-8" alt="skibidi" />
-        <button class="icon text-2xl" onclick="deleteFile{{stringifyName name}}Dialog.showModal()">delete</button>
+        <button class="icon text-2xl" onclick="deleteFile{{id}}Dialog.showModal()">delete</button>
     </div>
     <div>
         <p class="text-center">[{{truncate name}}]</p>
     </div>
 </div>
 
-<dialog id="deleteFile{{stringifyName name}}Dialog" class="modal">
+<dialog id="deleteFile{{id}}Dialog" class="modal">
     <div class="modal-box">
 		<h3 class="font-bold text-lg">Are you sure you want to delte this file?</h3>
         <p class="mt-2">{{name}}</p>

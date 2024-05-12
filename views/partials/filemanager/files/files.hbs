@@ -2,7 +2,7 @@
     <h2 class="text-xl font-semibold text-center mb-4">files</h2>
     <div class="flex flex-wrap gap-4">
         {{#each files}}
-            {{> filemanager/files/fileTile name=this}}
+            {{> filemanager/files/fileTile name=this id=@index}}
         {{/each}}
     </div>
 </div>

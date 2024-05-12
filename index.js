@@ -127,7 +127,7 @@ app.post('/upload', (req, res) => {
         const uploadedFiles = Array.isArray(uploadContent) ? [...uploadContent] : [uploadContent];
 
         uploadedFiles.forEach(async (file) => {
-            const fileName = await getNewFileName(file.name);
+            const fileName = (await getNewFileName(file.name)).replaceAll(' ', '_');
             const newFilePath = path.join(uploadPath, fileName);
             await fs.rename(file.path, newFilePath);
         })
@@ -186,9 +186,6 @@ app.engine('hbs', hbs({
 
             return 'unknown';
         },
-        stringifyName: (name) => {
-            return name.replace('dot', 'dotdot').replace('.', 'dot');
-        },
         truncate: (elementName) =>{
             const { base, ext, name } = path.parse(elementName);
 
@@ -197,7 +194,7 @@ app.engine('hbs', hbs({
             }
 
             return elementName
-        }
+        },
     },
     partialsDir: 'views/partials',
 }));
