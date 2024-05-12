@@ -76,6 +76,13 @@ app.get('/filemanager', async (req, res) => {
     const subDirs = currentDir.split(path.sep);
     subDirs.shift();
 
+    // const subDirsMap = subDirs.map()
+
+    const currentDir = req.query.name ?? '';
+
+    const subDirs = currentDir.split(path.sep);
+    subDirs.shift();
+
     const dirs = await getDirs();
     const files = await getFiles();
 
