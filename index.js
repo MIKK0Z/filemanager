@@ -160,22 +160,22 @@ app.post('/newFile', async (req, res) => {
 })
 
 app.post('/upload', (req, res) => {
-    console.log(req)
-
     let form = formidable({});
     form.uploadDir = uploadPath;
     form.keepExtensions = true;
     form.multiples = true;
-    form.parse(req, (_err, _fields, { files: uploadContent }) => {
+    form.parse(req, (_err, fields, { files: uploadContent }) => {
         const uploadedFiles = Array.isArray(uploadContent) ? [...uploadContent] : [uploadContent];
+        const { currentDir } = fields;
 
         uploadedFiles.forEach(async (file) => {
             const fileName = (await getNewFileName(file.name)).replaceAll(' ', '_');
-            const newFilePath = path.join(uploadPath, fileName);
+            const currentPath = path.join(uploadPath, ...currentDir.split('/'));
+            const newFilePath = path.join(currentPath, fileName);
             await fs.rename(file.path, newFilePath);
         })
 
-        res.redirect('/filemanager');
+        res.redirect(`/filemanager?name=${currentDir}`);
     })
 })
 
