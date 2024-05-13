@@ -66,6 +66,10 @@ const getNewFileName = async (originalFileName, currentDir) => {
     let { name: tmpFileName, ext } = path.parse(originalFileName);
     const existingFiles = await getFiles(currentDir);
 
+    if (ext === '' || ext === '.') {
+        ext = '.txt';
+    }
+
     while (existingFiles.includes(`${tmpFileName}${ext}`)) {
         tmpFileName = `${tmpFileName}_copy_${Date.now()}`;
     }
