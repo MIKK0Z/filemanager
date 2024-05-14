@@ -70,6 +70,8 @@ const getNewFileName = async (originalFileName, currentDir) => {
         ext = '.txt';
     }
 
+    tmpFileName = tmpFileName.replaceAll(' ', '_');
+
     while (existingFiles.includes(`${tmpFileName}${ext}`)) {
         tmpFileName = `${tmpFileName}_copy_${Date.now()}`;
     }
@@ -103,16 +105,19 @@ app.get('/filemanager', async (req, res) => {
     const currentDir = req.query.name ?? '/';
     const subDirs = getSubDirs(currentDir);
 
-    const dirs = (await getDirs(currentDir)).map((name, i) => {
-        return {
-            name,
-            // link: `/${name}`,
-            link: `${currentDir}${currentDir === '/' ? '' : '/'}${name}`
-        };
-    });
-    const files = await getFiles(currentDir);
+    try {
+        const dirs = (await getDirs(currentDir)).map((name) => {
+            return {
+                name,
+                link: `${currentDir}${currentDir === '/' ? '' : '/'}${name}`
+            };
+        });
+        const files = await getFiles(currentDir);
 
-    res.render('filemanager.hbs', { dirs, files, subDirs, currentDir, isHome: currentDir === '/' });
+        res.render('filemanager.hbs', { dirs, files, subDirs, currentDir, isHome: currentDir === '/' });
+    } catch (_err) {
+        res.render('error.hbs', { message: `No such dir: ${currentDir}` });
+    }
 })
 
 // app.get('/show', (req, res) => {
@@ -133,7 +138,7 @@ app.get('/filemanager', async (req, res) => {
 
 app.post('/newDir', async (req, res) => {
     const { body: { dirName, currentDir } } = req;
-    let tmpDirName = dirName;
+    let tmpDirName = dirName.replaceAll(' ', '_');
 
     const existingDirs = await getDirs(currentDir);
     const currentPath = getCurrentPath(currentDir);
@@ -173,7 +178,7 @@ app.post('/upload', (req, res) => {
         const { currentDir } = fields;
 
         uploadedFiles.forEach(async (file) => {
-            const fileName = (await getNewFileName(file.name)).replaceAll(' ', '_');
+            const fileName = (await getNewFileName(file.name));
             const currentPath = path.join(uploadPath, ...currentDir.split('/'));
             const newFilePath = path.join(currentPath, fileName);
             await fs.rename(file.path, newFilePath);
@@ -204,7 +209,7 @@ app.post('/removeFile', async (req, res) => {
 app.post('/changeDirName', async (req, res) => {
     const { body: { dirName, currentDir } } = req;
 
-    let tmpDirName = dirName;
+    let tmpDirName = dirName.replaceAll(' ', '_');
 
     const parentDir = currentDir.split('/').slice(0, currentDir.split('/').length - 1).join('/');
 

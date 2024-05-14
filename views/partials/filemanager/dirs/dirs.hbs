@@ -1,5 +1,8 @@
-<div class="flex flex-wrap gap-4">
-    {{#each dirs}}
-        {{> filemanager/dirs/dirTile dir=this id=@index}}
-    {{/each}}
+<div class="space-y-4">
+    <h2 class="text-xl font-semibold text-center">dirs</h2>
+    <div class="flex flex-wrap gap-4">
+        {{#each dirs}}
+            {{> filemanager/dirs/dirTile dir=this id=@index}}
+        {{/each}}
+    </div>
 </div>

@@ -10,5 +10,6 @@
 @layer utilities {
     .icon {
         font-family: 'Material Icons', sans-serif;
+        user-select: none;
     }
 }
