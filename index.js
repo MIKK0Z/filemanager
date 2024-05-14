@@ -113,8 +113,9 @@ app.get('/filemanager', async (req, res) => {
             };
         });
         const files = await getFiles(currentDir);
-
-        res.render('filemanager.hbs', { dirs, files, subDirs, currentDir, isHome: currentDir === '/' });
+        
+        console.log("aaa:", currentDir)
+        res.render('filemanager.hbs', { dirs, files, subDirs, currentDir, isHome: !(currentDir !== '/' && currentDir !== '') });
     } catch (_err) {
         res.render('error.hbs', { message: `No such dir: ${currentDir}` });
     }
@@ -161,10 +162,10 @@ app.post('/newFile', async (req, res) => {
 
     const currentPath = getCurrentPath(currentDir);
     const newFilePath = path.join(currentPath, newFileName);
+
     await fs.writeFile(newFilePath, '');
-
     const urlName = currentPath.split('upload')[1]?.split(path.sep)?.join('/') ?? '/';
-
+    
     res.redirect(`/filemanager?name=${urlName}`);
 })
 
@@ -234,14 +235,23 @@ app.engine('hbs', hbs({
     helpers: {
         getFileIcon: (fileName) => {
             const type = mime.lookup(fileName);
+            if (type === 'text/css') {
+                return 'css';
+            }
             if (type === 'image/gif') {
                 return 'gif';
+            }
+            if (type === 'text/html') {
+                return 'html';
             }
             if (type === 'image/x-icon') {
                 return 'ico';
             }
             if (type === 'image/jpeg') {
                 return 'jpg';
+            }
+            if (type === 'application/javascript') {
+                return 'js';
             }
             if (type === 'audio/mpeg') {
                 return 'mp3';

@@ -67,7 +67,7 @@
 			</form>
 			<form method="POST" action="/newFile" id="newFile">
 				<input type="hidden" name="currentDir", value={{currentDir}}>
-				<button type="submit" class="btn btn-neutral w-full" id="newFileBtn">
+				<button type="submit" class="btn btn-neutral w-full" id="newFileBtn" disabled>
 					create
 				</button>
 			</form>
@@ -81,14 +81,20 @@
 <dialog id="changeDirDialog" class="modal">
 	<div class="modal-box">
 		<h3 class="font-bold text-lg">Change dir name:</h3>
-		<input type="text" class="input input-bordered w-full mt-2" name="dirName" form="changeDir">
+		<input
+			type="text"
+			class="input input-bordered w-full mt-2"
+			name="dirName"
+			form="changeDir"
+			oninput="document.querySelector('#changeDirBtn').disabled = this.value.length === 0;"
+		>
 		<div class="modal-action">
 			<form method="dialog">
 				<button class="btn">cancel</button>
 			</form>
 			<form method="POST" action="/changeDirName" id="changeDir">
 				<input type="hidden" name="currentDir", value={{currentDir}}>
-				<button type="submit" class="btn btn-neutral w-full">
+				<button type="submit" class="btn btn-neutral w-full" id="changeDirBtn" disabled>
 					change
 				</button>
 			</form>
