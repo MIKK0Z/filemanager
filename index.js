@@ -29,7 +29,11 @@ const asyncFilter = async (arr, predicate) => {
 }
 
 const getUploadDirContent = async (currentPath) => {
-    return await fs.readdir(currentPath);
+    try {
+        return await fs.readdir(currentPath);
+    } catch (err) {
+        throw err;
+    }
 }
 
 const getCurrentPath = (currentDir) => {
@@ -38,45 +42,60 @@ const getCurrentPath = (currentDir) => {
 
 const getDirs = async (currentDir) => {
     const currentPath = getCurrentPath(currentDir);
-    const uploadDirContent = await getUploadDirContent(currentPath);
 
-    const dirs = await asyncFilter(uploadDirContent, async (element) => {
-        const elementPath = path.join(currentPath, element);
-        const stats = await fs.lstat(elementPath);
-        return stats.isDirectory();
-    })
+    try {
+        const uploadDirContent = await getUploadDirContent(currentPath);
 
-    return dirs;
+        const dirs = await asyncFilter(uploadDirContent, async (element) => {
+            const elementPath = path.join(currentPath, element);
+            const stats = await fs.lstat(elementPath);
+            return stats.isDirectory();
+        })
+
+        return dirs;
+    } catch (err) {
+        throw err;
+    }
 }
 
 const getFiles = async (currentDir) => {
     const currentPath = getCurrentPath(currentDir);
-    const uploadDirContent = await getUploadDirContent(currentPath);
 
-    const files = await asyncFilter(uploadDirContent, async (element) => {
-        const elementPath = path.join(currentPath, element);
-        const stats = await fs.lstat(elementPath);
-        return stats.isFile();
-    })
-
-    return files;
+    try {
+        const uploadDirContent = await getUploadDirContent(currentPath);
+    
+        const files = await asyncFilter(uploadDirContent, async (element) => {
+            const elementPath = path.join(currentPath, element);
+            const stats = await fs.lstat(elementPath);
+            return stats.isFile();
+        })
+    
+        return files;
+    } catch (err) {
+        throw err;
+    }
 }
 
 const getNewFileName = async (originalFileName, currentDir) => {
     let { name: tmpFileName, ext } = path.parse(originalFileName);
-    const existingFiles = await getFiles(currentDir);
 
-    if (ext === '' || ext === '.') {
-        ext = '.txt';
+    try {
+        const existingFiles = await getFiles(currentDir);
+    
+        if (ext === '' || ext === '.') {
+            ext = '.txt';
+        }
+    
+        tmpFileName = tmpFileName.replaceAll(' ', '_');
+    
+        while (existingFiles.includes(`${tmpFileName}${ext}`)) {
+            tmpFileName = `${tmpFileName}_copy_${Date.now()}`;
+        }
+    
+        return `${tmpFileName}${ext}`;
+    } catch (err) {
+        throw err;
     }
-
-    tmpFileName = tmpFileName.replaceAll(' ', '_');
-
-    while (existingFiles.includes(`${tmpFileName}${ext}`)) {
-        tmpFileName = `${tmpFileName}_copy_${Date.now()}`;
-    }
-
-    return `${tmpFileName}${ext}`;
 }
 
 const getSubDirs = (currentDir) => {
@@ -97,7 +116,11 @@ const getSubDirs = (currentDir) => {
     return subDirs;
 }
 
-app.get('/', (req, res) => {
+const checkInvalidCharacter = (name) => {
+    return name.includes('/') || name.includes('<') || name.includes('>') || name.includes(':') || name.includes('"') || name.includes('\\') || name.includes('|') || name.includes('?') || name.includes('*');
+}
+
+app.get('/', (_req, res) => {
     res.redirect('/filemanager');
 })
 
@@ -114,7 +137,6 @@ app.get('/filemanager', async (req, res) => {
         });
         const files = await getFiles(currentDir);
         
-        console.log("aaa:", currentDir)
         res.render('filemanager.hbs', { dirs, files, subDirs, currentDir, isHome: !(currentDir !== '/' && currentDir !== '') });
     } catch (_err) {
         res.render('error.hbs', { message: `No such dir: ${currentDir}` });
@@ -139,34 +161,55 @@ app.get('/filemanager', async (req, res) => {
 
 app.post('/newDir', async (req, res) => {
     const { body: { dirName, currentDir } } = req;
-    let tmpDirName = dirName.replaceAll(' ', '_');
 
-    const existingDirs = await getDirs(currentDir);
-    const currentPath = getCurrentPath(currentDir);
-
-    while (existingDirs.includes(tmpDirName)) {
-        tmpDirName = `${dirName}_copy_${Date.now()}`;
+    if (checkInvalidCharacter(dirName)) {
+        res.render('error.hbs', { message: 'Invalid characters in dir name' });
+        return;
     }
 
-    const newDirPath = path.join(currentPath, tmpDirName);
-    await fs.mkdir(newDirPath);
+    let tmpDirName = dirName.replaceAll(' ', '_');
 
-    const urlName = newDirPath.split('upload')[1]?.split(path.sep)?.join('/') ?? '/';
+    try {
+        const existingDirs = await getDirs(currentDir);
+        const currentPath = getCurrentPath(currentDir);
 
-    res.redirect(`/filemanager?name=${urlName}`);
+        while (existingDirs.includes(tmpDirName)) {
+            tmpDirName = `${dirName}_copy_${Date.now()}`;
+        }
+
+        const newDirPath = path.join(currentPath, tmpDirName);
+        await fs.mkdir(newDirPath);
+
+        const urlName = newDirPath.split('upload')[1]?.split(path.sep)?.join('/') ?? '/';
+
+        res.redirect(`/filemanager?name=${urlName}`);
+    } catch (_err) {
+        res.render('error.hbs', { message: 'Something went wrong while creating the dir' });
+    }
 })
 
 app.post('/newFile', async (req, res) => {
     const { body: { fileName, currentDir } } = req;
-    const newFileName = await getNewFileName(fileName, currentDir);
 
-    const currentPath = getCurrentPath(currentDir);
-    const newFilePath = path.join(currentPath, newFileName);
+    if (checkInvalidCharacter(fileName)) {
+        res.render('error.hbs', { message: 'Invalid characters in file name' });
+        return;
+    }
 
-    await fs.writeFile(newFilePath, '');
-    const urlName = currentPath.split('upload')[1]?.split(path.sep)?.join('/') ?? '/';
+    try {
+        const newFileName = await getNewFileName(fileName, currentDir);
+
+        const currentPath = getCurrentPath(currentDir);
+        const newFilePath = path.join(currentPath, newFileName);
+
+        await fs.writeFile(newFilePath, '');
+        const urlName = currentPath.split('upload')[1]?.split(path.sep)?.join('/') ?? '/';
+        
+        res.redirect(`/filemanager?name=${urlName}`);
+    } catch (_err) {
+        res.render('error.hbs', { message: 'Something went wrong while creating the file' });
+    }
     
-    res.redirect(`/filemanager?name=${urlName}`);
 })
 
 app.post('/upload', (req, res) => {
@@ -174,19 +217,41 @@ app.post('/upload', (req, res) => {
     form.uploadDir = uploadPath;
     form.keepExtensions = true;
     form.multiples = true;
-    form.parse(req, (_err, fields, { files: uploadContent }) => {
-        const uploadedFiles = Array.isArray(uploadContent) ? [...uploadContent] : [uploadContent];
-        const { currentDir } = fields;
 
-        uploadedFiles.forEach(async (file) => {
-            const fileName = (await getNewFileName(file.name));
-            const currentPath = path.join(uploadPath, ...currentDir.split('/'));
-            const newFilePath = path.join(currentPath, fileName);
-            await fs.rename(file.path, newFilePath);
-        })
+    try {
+        form.parse(req, async (_err, fields, { files: uploadContent }) => {
+            const uploadedFiles = Array.isArray(uploadContent) ? [...uploadContent] : [uploadContent];
+            const { currentDir } = fields;
 
-        res.redirect(`/filemanager?name=${currentDir}`);
-    })
+            let invalidFiles = false;
+
+            await Promise.all(uploadedFiles.map(async (file) => {
+                if (checkInvalidCharacter(file.name)) {
+                    invalidFiles = true;
+                }
+            }))
+
+            if (!invalidFiles) {
+                await Promise.all(uploadedFiles.map(async (file) => {
+                    const fileName = await getNewFileName(file.name);
+                    const currentPath = path.join(uploadPath, ...currentDir.split('/'));
+                    const newFilePath = path.join(currentPath, fileName);
+                    await fs.rename(file.path, newFilePath);
+                }))
+
+                res.redirect(`/filemanager?name=${currentDir}`);
+            } else {
+                await Promise.all(uploadedFiles.map(async (file) => {
+                    await fs.rm(file.path);
+                }))
+
+                res.render('error.hbs', { message: 'Invalid characters in uploaded files\' names' });
+            }
+            
+        });
+    } catch (err) {
+        res.render('error.hbs', { message: 'Something went wrong while uploading files' }); 
+    }
 })
 
 app.post('/removeDir', async (req, res) => {
@@ -209,6 +274,11 @@ app.post('/removeFile', async (req, res) => {
 
 app.post('/changeDirName', async (req, res) => {
     const { body: { dirName, currentDir } } = req;
+
+    if (checkInvalidCharacter(dirName)) {
+        res.render('error.hbs', { message: 'Invalid characters in dir name' });
+        return;
+    }
 
     let tmpDirName = dirName.replaceAll(' ', '_');
 
