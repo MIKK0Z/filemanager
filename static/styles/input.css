@@ -7,6 +7,20 @@
     src: url('./../fonts/material-icons-latin-400-normal.woff2');
 }
 
+@font-face {
+    font-family: 'JetBrainsMono';
+    src: url('./../fonts/JetBrainsMono-Regular.woff2');
+}
+
+@layer base {
+    body {
+        font-family: 'JetBrainsMono', monospace;
+    }
+    .mono {
+        font-family: 'JetBrainsMono', monospace;
+    }
+}
+
 @layer utilities {
     .icon {
         font-family: 'Material Icons', sans-serif;

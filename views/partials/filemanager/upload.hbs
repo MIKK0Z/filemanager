@@ -14,7 +14,7 @@
 			multiple
 			required
 			name="files"
-			class="file-input file-input-bordered"
+			class="file-input file-input-bordered [&::file-selector-button]:mono"
 			onchange="onUploadChange(this.files.length)"
 		/>
 		<input type="hidden" name="currentDir" value={{currentDir}}>
@@ -27,14 +27,20 @@
 <dialog id="newDirDialog" class="modal">
 	<div class="modal-box">
 		<h3 class="font-bold text-lg">New directory name:</h3>
-		<input type="text" class="input input-bordered w-full mt-2" name="dirName" form="newDir">
+		<input
+			type="text"
+			class="input input-bordered w-full mt-2"
+			name="dirName"
+			form="newDir"
+			oninput="document.querySelector('#newDirBtn').disabled = this.value.length === 0;"
+		>
 		<div class="modal-action">
 			<form method="dialog">
 				<button class="btn">cancel</button>
 			</form>
 			<form method="POST" action="/newDir" id="newDir">
 				<input type="hidden" name="currentDir", value={{currentDir}}>
-				<button type="submit" class="btn btn-neutral w-full">
+				<button type="submit" class="btn btn-neutral w-full" id="newDirBtn" disabled>
 					create
 				</button>
 			</form>
@@ -48,14 +54,20 @@
 <dialog id="newFileDialog" class="modal">
 	<div class="modal-box">
 		<h3 class="font-bold text-lg">New file name:</h3>
-		<input type="text" class="input input-bordered w-full mt-2" name="fileName" form="newFile">
+		<input
+			type="text"
+			class="input input-bordered w-full mt-2"
+			name="fileName"
+			form="newFile"
+			oninput="document.querySelector('#newFileBtn').disabled = this.value.length === 0;"
+		>
 		<div class="modal-action">
 			<form method="dialog">
 				<button class="btn">cancel</button>
 			</form>
 			<form method="POST" action="/newFile" id="newFile">
 				<input type="hidden" name="currentDir", value={{currentDir}}>
-				<button type="submit" class="btn btn-neutral w-full">
+				<button type="submit" class="btn btn-neutral w-full" id="newFileBtn">
 					create
 				</button>
 			</form>
