@@ -5,15 +5,19 @@
 	<button type="button" class="btn btn-neutral w-full" onclick="newFileDialog.showModal()">
 		new file
 	</button>
+	<button type="button" class="btn btn-neutral w-full" onclick="changeDirDialog.showModal()" {{#if isHome}} disabled {{/if}}>
+		change dir name
+	</button>
 	<form method="POST" action="/upload" enctype="multipart/form-data" class="form-control gap-2">
 		<input
 			type="file"
 			multiple
 			required
 			name="files"
-			class="file-input file-input-bordered"
+			class="file-input file-input-bordered [&::file-selector-button]:mono"
 			onchange="onUploadChange(this.files.length)"
 		/>
+		<input type="hidden" name="currentDir" value={{currentDir}}>
 		<button type="submit" class="btn btn-outline" id="uploadButton" disabled>
 			upload
 		</button>
@@ -23,13 +27,20 @@
 <dialog id="newDirDialog" class="modal">
 	<div class="modal-box">
 		<h3 class="font-bold text-lg">New directory name:</h3>
-		<input type="text" class="input input-bordered w-full mt-2" name="dirName" form="newDir">
+		<input
+			type="text"
+			class="input input-bordered w-full mt-2"
+			name="dirName"
+			form="newDir"
+			oninput="document.querySelector('#newDirBtn').disabled = this.value.length === 0;"
+		>
 		<div class="modal-action">
 			<form method="dialog">
 				<button class="btn">cancel</button>
 			</form>
 			<form method="POST" action="/newDir" id="newDir">
-				<button type="submit" class="btn btn-neutral w-full">
+				<input type="hidden" name="currentDir", value={{currentDir}}>
+				<button type="submit" class="btn btn-neutral w-full" id="newDirBtn" disabled>
 					create
 				</button>
 			</form>
@@ -43,14 +54,48 @@
 <dialog id="newFileDialog" class="modal">
 	<div class="modal-box">
 		<h3 class="font-bold text-lg">New file name:</h3>
-		<input type="text" class="input input-bordered w-full mt-2" name="fileName" form="newFile">
+		<input
+			type="text"
+			class="input input-bordered w-full mt-2"
+			name="fileName"
+			form="newFile"
+			oninput="document.querySelector('#newFileBtn').disabled = this.value.length === 0;"
+		>
 		<div class="modal-action">
 			<form method="dialog">
 				<button class="btn">cancel</button>
 			</form>
 			<form method="POST" action="/newFile" id="newFile">
-				<button type="submit" class="btn btn-neutral w-full">
+				<input type="hidden" name="currentDir", value={{currentDir}}>
+				<button type="submit" class="btn btn-neutral w-full" id="newFileBtn" disabled>
 					create
+				</button>
+			</form>
+		</div>
+	</div>
+	<form method="dialog" class="modal-backdrop">
+		<button>close</button>
+	</form>
+</dialog>
+
+<dialog id="changeDirDialog" class="modal">
+	<div class="modal-box">
+		<h3 class="font-bold text-lg">Change dir name:</h3>
+		<input
+			type="text"
+			class="input input-bordered w-full mt-2"
+			name="dirName"
+			form="changeDir"
+			oninput="document.querySelector('#changeDirBtn').disabled = this.value.length === 0;"
+		>
+		<div class="modal-action">
+			<form method="dialog">
+				<button class="btn">cancel</button>
+			</form>
+			<form method="POST" action="/changeDirName" id="changeDir">
+				<input type="hidden" name="currentDir", value={{currentDir}}>
+				<button type="submit" class="btn btn-neutral w-full" id="changeDirBtn" disabled>
+					change
 				</button>
 			</form>
 		</div>

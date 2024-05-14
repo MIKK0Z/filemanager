@@ -1,9 +1,10 @@
-<div class="flex w-full h-dvh">
+<div class="flex w-full min-h-dvh">
     {{> filemanager/upload}}
     <div class="divider divider-horizontal"></div>
     <div class="flex-1 flex flex-col">
+        {{> filemanager/fsNav subDirs=subDirs}}
         {{> filemanager/dirs/dirs dirs=dirs}}
-        <div class="divider"></div>
+        <div class="divider divider-vertical"></div>
         {{> filemanager/files/files files=files}}
     </div>
 </div>

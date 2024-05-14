@@ -4,20 +4,22 @@
         <button class="icon text-2xl" onclick="deleteDir{{id}}Dialog.showModal()">delete</button>
     </div>
     <div>
-        <p class="text-center">[{{truncate name}}]</p>
+		<a href="/filemanager?name={{dir.link}}" class="link link-hover">
+			<p class="text-center">[{{truncate dir.name}}]</p>
+		</a>
     </div>
 </div>
 
 <dialog id="deleteDir{{id}}Dialog" class="modal">
     <div class="modal-box">
 		<h3 class="font-bold text-lg">Are you sure you want to remove this directory?</h3>
-        <p class="mt-2">{{name}}</p>
+        <p class="mt-2">{{dir.name}}</p>
 		<div class="modal-action">
 			<form method="dialog">
 				<button class="btn">cancel</button>
 			</form>
 			<form method="POST" action="/removeDir">
-                <input type="hidden" name="dirName" value={{name}}>
+                <input type="hidden" name="dirName" value={{dir.name}}>
 				<button type="submit" class="btn btn-error w-full">
 					yes
 				</button>
