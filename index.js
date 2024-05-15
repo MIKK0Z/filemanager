@@ -355,5 +355,3 @@ app.set('view engine', 'hbs');
 app.listen(PORT, () => {
     console.log(`server started at port ${PORT}`);
 })
-
-// etap-4
