@@ -120,6 +120,13 @@ const checkInvalidCharacter = (name) => {
     return name.includes('/') || name.includes('<') || name.includes('>') || name.includes(':') || name.includes('"') || name.includes('\\') || name.includes('|') || name.includes('?') || name.includes('*');
 }
 
+const getParentPath = (currentPath) => {
+    const splitted = currentPath.split(path.sep);
+
+    splitted.pop();
+    return `/${splitted.join('/')}`;
+}
+
 app.get('/', (_req, res) => {
     res.redirect('/filemanager');
 })
@@ -132,10 +139,16 @@ app.get('/filemanager', async (req, res) => {
         const dirs = (await getDirs(currentDir)).map((name) => {
             return {
                 name,
-                link: `${currentDir}${currentDir === '/' ? '' : '/'}${name}`
+                link: `${currentDir}${currentDir === '/' ? '' : '/'}${name}`,
+                path: path.join(...currentDir.split('/'), name),
             };
         });
-        const files = await getFiles(currentDir);
+        const files = (await getFiles(currentDir)).map((name) => {
+            return {
+                name,
+                path: path.join(...currentDir.split('/'), name),
+            };
+        });
         
         res.render('filemanager.hbs', { dirs, files, subDirs, currentDir, isHome: !(currentDir !== '/' && currentDir !== '') });
     } catch (_err) {
@@ -255,21 +268,21 @@ app.post('/upload', (req, res) => {
 })
 
 app.post('/removeDir', async (req, res) => {
-    const { body: { dirName } } = req;
-    const toDelteDirPath = path.join(uploadPath, dirName);
+    const { body: { dirPath } } = req;
+    const toDelteDirPath = path.join(uploadPath, dirPath);
 
     await fs.rm(toDelteDirPath, { recursive: true });
 
-    res.redirect('/filemanager');
+    res.redirect(`/filemanager?name=${getParentPath(dirPath)}`);
 })
 
 app.post('/removeFile', async (req, res) => {
-    const { body: { fileName } } = req;
-    const toDelteFilePath = path.join(uploadPath, fileName);
+    const { body: { filePath } } = req;
+    const toDelteFilePath = path.join(uploadPath, filePath);
 
     await fs.rm(toDelteFilePath);
 
-    res.redirect('/filemanager');
+    res.redirect(`/filemanager?name=${getParentPath(filePath)}`);
 })
 
 app.post('/changeDirName', async (req, res) => {

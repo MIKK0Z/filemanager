@@ -1,23 +1,23 @@
 <div class="border-2 p-4 rounded-box">
     <div class="flex justify-between gap-2">
-        <img src="/gfx/icons/{{getFileIcon name}}.png" class="avatar w-8" alt="skibidi" />
+        <img src="/gfx/icons/{{getFileIcon file.name}}.png" class="avatar w-8" alt="skibidi" />
         <button class="icon text-2xl" onclick="deleteFile{{id}}Dialog.showModal()">delete</button>
     </div>
     <div>
-        <p class="text-center">[{{truncate name}}]</p>
+        <p class="text-center">[{{truncate file.name}}]</p>
     </div>
 </div>
 
 <dialog id="deleteFile{{id}}Dialog" class="modal">
     <div class="modal-box">
 		<h3 class="font-bold text-lg">Are you sure you want to delte this file?</h3>
-        <p class="mt-2">{{name}}</p>
+        <p class="mt-2">{{file.name}}</p>
 		<div class="modal-action">
 			<form method="dialog">
 				<button class="btn">cancel</button>
 			</form>
 			<form method="POST" action="/removeFile">
-				<input type="hidden" name="fileName" value={{name}}>
+				<input type="hidden" name="filePath" value={{file.path}}>
 				<button type="submit" class="btn btn-error w-full">
 					yes
 				</button>
