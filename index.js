@@ -63,13 +63,13 @@ const getFiles = async (currentDir) => {
 
     try {
         const uploadDirContent = await getUploadDirContent(currentPath);
-    
+
         const files = await asyncFilter(uploadDirContent, async (element) => {
             const elementPath = path.join(currentPath, element);
             const stats = await fs.lstat(elementPath);
             return stats.isFile();
         })
-    
+
         return files;
     } catch (err) {
         throw err;
@@ -81,17 +81,17 @@ const getNewFileName = async (originalFileName, currentDir) => {
 
     try {
         const existingFiles = await getFiles(currentDir);
-    
+
         if (ext === '' || ext === '.') {
             ext = '.txt';
         }
-    
+
         tmpFileName = tmpFileName.replaceAll(' ', '_');
-    
+
         while (existingFiles.includes(`${tmpFileName}${ext}`)) {
             tmpFileName = `${tmpFileName}_copy_${Date.now()}`;
         }
-    
+
         return `${tmpFileName}${ext}`;
     } catch (err) {
         throw err;
@@ -149,11 +149,23 @@ app.get('/filemanager', async (req, res) => {
                 path: path.join(...currentDir.split('/'), name),
             };
         });
-        
+
         res.render('filemanager.hbs', { dirs, files, subDirs, currentDir, isHome: !(currentDir !== '/' && currentDir !== '') });
     } catch (_err) {
         res.render('error.hbs', { message: `No such dir: ${currentDir}` });
     }
+})
+
+app.get('/showFile', async (req, res) => {
+    const fileLink = req.query.name;
+
+    console.log(fileLink)
+
+    const file = await fs.readFile(path.join(uploadPath, ...fileLink.split('/')))
+
+    console.log(file.toString());
+
+    res.render('editor.hbs')
 })
 
 // app.get('/show', (req, res) => {
@@ -217,12 +229,12 @@ app.post('/newFile', async (req, res) => {
 
         await fs.writeFile(newFilePath, '');
         const urlName = currentPath.split('upload')[1]?.split(path.sep)?.join('/') ?? '/';
-        
+
         res.redirect(`/filemanager?name=${urlName}`);
     } catch (_err) {
         res.render('error.hbs', { message: 'Something went wrong while creating the file' });
     }
-    
+
 })
 
 app.post('/upload', (req, res) => {
@@ -260,10 +272,10 @@ app.post('/upload', (req, res) => {
 
                 res.render('error.hbs', { message: 'Invalid characters in uploaded files\' names' });
             }
-            
+
         });
     } catch (err) {
-        res.render('error.hbs', { message: 'Something went wrong while uploading files' }); 
+        res.render('error.hbs', { message: 'Something went wrong while uploading files' });
     }
 })
 
