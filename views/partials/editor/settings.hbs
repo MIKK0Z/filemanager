@@ -1,0 +1,22 @@
+<div class="space-y-4 max-w-xs w-full">
+    <select class="select select-bordered w-full" id="themeSelect" onchange="changeTheme(event.target.value)">
+        <option value="light">light</option>
+        <option value="dark">dark</option>
+        <option value="coffee">coffee</option>
+    </select>
+    <button type="button" class="btn btn-neutral w-full" onclick="increaseFontSize()">
+        increase font size
+    </button>
+    <button type="button" class="btn btn-neutral w-full" onclick="decreaseFontSize()">
+        decrease font size
+    </button>
+    <button type="button" class="btn btn-neutral w-full" onclick="saveConfig()">
+        save config
+    </button>
+        
+    <div class="divider divider-vertical"></div>
+    
+    <button type="button" class="btn btn-neutral w-full">
+        change file name
+    </button>
+</div>

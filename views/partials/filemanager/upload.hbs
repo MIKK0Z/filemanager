@@ -54,16 +54,16 @@
 <dialog id="newFileDialog" class="modal">
 	<div class="modal-box">
 		<h3 class="font-bold text-lg">New file name:</h3>
-		<div class="flex items-center">
+		<div class="flex items-center gap-2">
 			<input
 				type="text"
-				class="input input-bordered w-full mt-2"
+				class="input input-bordered flex-1"
 				name="fileName"
 				form="newFile"
 				oninput="document.querySelector('#newFileBtn').disabled = this.value.length === 0;"
 			/>
-			<select class="select select-bordered w-full max-w-xs" name="ext">
-				<option value=".html">.html</option>
+			<select class="select select-bordered max-w-xs" name="ext" form="newFile">
+				<option value=".html" selected>.html</option>
 				<option value=".css">.css</option>
 				<option value=".js">.js</option>
 			</select>

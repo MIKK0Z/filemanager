@@ -1,3 +1,100 @@
 <div class="flex w-full min-h-dvh">
-     
+    {{> editor/settings}}
+    <div class="divider divider-horizontal"></div>
+    <div class="flex-1 flex flex-col">
+        {{> editor/fileLink fileLink=fileLink}}
+        <div class="divider divider-vertical"></div>
+        <form action="/editFile" method="POST" class="flex-1 flex flex-col gap-4">
+            <div id="editor" class="flex">
+                <div class="numbers flex flex-col" id="numbers"></div>
+                <textarea class="flex-1 resize-none" id="textarea" onchange="onUpdate(event.target.value)">{{file}}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">save file</button>
+        </form>
+    </div>
 </div>
+
+<script>
+
+    let config = {
+        theme: 'light',
+        fontSize: 16,
+    }
+
+    async function loadConfig() {
+        const link = `${window.location.origin}/getConfig`;
+        config = await (await fetch(link)).json();
+
+        const themeSelect = document.querySelector('#themeSelect');
+        themeSelect.value = config.theme;
+
+        onLoad();
+    }
+
+    function onLoad() {
+        const editor = document.querySelector('#editor');
+        const numbers = document.querySelector('#numbers');
+        const textarea = document.querySelector('#textarea');
+
+        update();
+
+        const lines = textarea.value.split('\n').length;
+        setLines(lines);
+    }
+
+    function onUpdate(value) {
+        const lines = textarea.value.split('\n').length;
+        setLines(lines);
+    }
+
+    function setLines(lines) {
+        const editor = document.querySelector('#editor');
+        const numbers = document.querySelector('#numbers');
+
+        editor.style.height = `${config.fontSize * 1.5 * lines}px`;
+
+        numbers.innerHTML = '';
+
+        for (let i = 1; i < lines + 1; i++) {
+            const number = document.createElement('span');
+            number.innerText = i;
+            console.log(number)
+            numbers.appendChild(number);
+        }
+    }
+
+    function update() {
+        const editor = document.querySelector('#editor');
+        
+        editor.setAttribute('data-theme', config.theme);
+        editor.style.fontSize = `${config.fontSize}px`;
+    }
+
+    function increaseFontSize() {
+        config.fontSize += 1;
+        update();
+    }
+
+    function decreaseFontSize() {
+        config.fontSize -= 1;
+        update();
+    }
+
+    function changeTheme(theme) {
+        config.theme = theme;
+        update();
+    }
+
+    async function saveConfig() {
+        const link = `${window.location.origin}/setConfig`;
+        await fetch(link, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(config),
+        })
+    }
+
+    loadConfig();
+</script>

@@ -10,6 +10,12 @@ const PORT = 3000;
 const MAX_FILENAME_LENGTH = 32;
 const __dirname = import.meta.dirname;
 const uploadPath = path.join(__dirname, 'upload');
+const configPath = path.join(__dirname, 'config.json');
+
+const DEFAULT_CONFIG = {
+    theme: 'light',
+    fontSize: 16,
+}
 
 const app = express();
 app.use(express.static('static'));
@@ -127,6 +133,41 @@ const getParentPath = (currentPath) => {
     return `/${splitted.join('/')}`;
 }
 
+const getDefaultFileContent = (ext) => {
+    if (ext === '.html') {
+        return (
+`<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+</html>`
+        );
+    }
+    if (ext === '.css') {
+        return (
+`*,
+::before,
+::after {
+    box-sizing: border-box;
+}`          
+        );
+    }
+    if (ext === '.js') {
+        return (
+`const helloWorld = document.querySelector('#helloWorld');
+console.log(helloWorld);`     
+        );
+    }
+    
+    return '';
+}
+
 app.get('/', (_req, res) => {
     res.redirect('/filemanager');
 })
@@ -146,6 +187,7 @@ app.get('/filemanager', async (req, res) => {
         const files = (await getFiles(currentDir)).map((name) => {
             return {
                 name,
+                link: `${currentDir}${currentDir === '/' ? '' : '/'}${name}`,
                 path: path.join(...currentDir.split('/'), name),
             };
         });
@@ -159,13 +201,33 @@ app.get('/filemanager', async (req, res) => {
 app.get('/showFile', async (req, res) => {
     const fileLink = req.query.name;
 
-    console.log(fileLink)
+    // console.log(fileLink)
 
-    const file = await fs.readFile(path.join(uploadPath, ...fileLink.split('/')))
+    const file = (await fs.readFile(path.join(uploadPath, ...fileLink.split('/')))).toString();
 
-    console.log(file.toString());
+    // console.log(typeof file);
 
-    res.render('editor.hbs')
+    res.render('editor.hbs', { fileLink, file, DEFAULT_CONFIG })
+})
+
+app.get('/getConfig', async (_req, res) => {
+    let config = null;
+    try {
+        config = JSON.parse((await fs.readFile(configPath)).toString());
+    } catch (_error) {
+        await fs.writeFile(configPath, JSON.stringify(DEFAULT_CONFIG, null, 4));
+        config = JSON.parse((await fs.readFile(configPath)).toString());
+    }
+    
+    res.json(config);
+})
+
+app.post('/setConfig', async (req, res) => {
+    const { theme, fontSize } = req.body;
+    
+    await fs.writeFile(configPath, JSON.stringify({ theme, fontSize }, null, 4))
+
+    res.status(200).send('ok');
 })
 
 // app.get('/show', (req, res) => {
@@ -214,7 +276,7 @@ app.post('/newDir', async (req, res) => {
 })
 
 app.post('/newFile', async (req, res) => {
-    const { body: { fileName, currentDir } } = req;
+    const { body: { fileName, currentDir, ext } } = req;
 
     if (checkInvalidCharacter(fileName)) {
         res.render('error.hbs', { message: 'Invalid characters in file name' });
@@ -222,12 +284,12 @@ app.post('/newFile', async (req, res) => {
     }
 
     try {
-        const newFileName = await getNewFileName(fileName, currentDir);
+        const newFileName = await getNewFileName(`${fileName}${ext}`, currentDir);
 
         const currentPath = getCurrentPath(currentDir);
         const newFilePath = path.join(currentPath, newFileName);
 
-        await fs.writeFile(newFilePath, '');
+        await fs.writeFile(newFilePath, getDefaultFileContent(ext));
         const urlName = currentPath.split('upload')[1]?.split(path.sep)?.join('/') ?? '/';
 
         res.redirect(`/filemanager?name=${urlName}`);
@@ -370,7 +432,7 @@ app.engine('hbs', hbs({
                 return `${name.slice(0, MAX_FILENAME_LENGTH - ext.length)}...${ext}`;
             }
 
-            return elementName
+            return elementName;
         },
     },
     partialsDir: 'views/partials',

@@ -4,7 +4,9 @@
         <button class="icon text-2xl" onclick="deleteFile{{id}}Dialog.showModal()">delete</button>
     </div>
     <div>
-        <p class="text-center">[{{truncate file.name}}]</p>
+		<a href="/showFile?name={{file.link}}" class="link link-hover">
+        	<p class="text-center">[{{truncate file.name}}]</p>
+		</a>
     </div>
 </div>
 
