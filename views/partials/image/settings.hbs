@@ -1,0 +1,40 @@
+<div class="space-y-4 max-w-xs w-full">
+    <button type="button" class="btn btn-neutral w-full" onclick="toggleFilters()">
+        filters
+    </button>
+        
+    <div class="divider divider-vertical"></div>
+    
+    <button type="button" class="btn btn-neutral w-full" onclick="newFileNameDialog.showModal()">
+        change file name
+    </button>
+</div>
+
+<dialog id="newFileNameDialog" class="modal">
+	<div class="modal-box">
+		<h3 class="font-bold text-lg">New file's name:</h3>
+		<div class="flex items-center gap-2">
+			<input
+				type="text"
+				class="input input-bordered flex-1"
+				name="fileName"
+				form="newFile"
+				oninput="document.querySelector('#renameFileBtn').disabled = this.value.length === 0;"
+			/>
+		</div>
+		<div class="modal-action">
+			<form method="dialog">
+				<button class="btn">cancel</button>
+			</form>
+			<form method="POST" action="/renameFile" id="newFile">
+				<input type="hidden" name="fileLink", value={{fileLink}} />
+				<button type="submit" class="btn btn-neutral w-full" id="renameFileBtn" disabled>
+					rename
+				</button>
+			</form>
+		</div>
+	</div>
+	<form method="dialog" class="modal-backdrop">
+		<button>close</button>
+	</form>
+</dialog>

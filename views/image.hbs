@@ -1,0 +1,25 @@
+<div class="flex w-full min-h-dvh">
+    {{> image/settings fileLink=fileLink}}
+    <div class="divider divider-horizontal"></div>
+    <div class="flex-1 flex flex-col">
+        {{> image/fileLink fileLink=fileLink}}
+        <div class="divider divider-vertical"></div>
+        <div class="flex-1 flex">
+            <div id="panel" style="width: 0px;" class="flex justify-between duration-300 overflow-hidden">
+                <div>
+                    skibidi
+                </div>
+                <div class="divider divider-horizontal"></div>
+            </div>
+            <img src={{fileLink}} alt={{fileLink}} style="width: 100px; height: 100px;" />
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleFilters() {
+        const panel = document.querySelector('#panel');
+        const currWidth = panel.style.width;
+        panel.style.width = currWidth === '0px' ? '16rem' : '0px';
+    }
+</script>

@@ -18,7 +18,10 @@ const DEFAULT_CONFIG = {
 }
 
 const app = express();
+
 app.use(express.static('static'));
+app.use(express.static('upload'));
+
 app.use(express.urlencoded({
     extended: true,
 }))
@@ -171,7 +174,7 @@ console.log(helloWorld);`
 const getFileLink = (currentDir, fileName) => {
     const ext = path.extname(fileName);
 
-    if (ext === '.html' || ext === '.css' || ext === '.js' || ext === '.txt') {
+    if (ext === '.html' || ext === '.css' || ext === '.js' || ext === '.txt' || ext === '.png' || ext === '.jpg' || ext === '.jpeg') {
         return `${currentDir}${currentDir === '/' ? '' : '/'}${fileName}`;
     }
 
@@ -210,9 +213,23 @@ app.get('/filemanager', async (req, res) => {
 
 app.get('/showFile', async (req, res) => {
     const fileLink = req.query.name;
-    const file = (await fs.readFile(path.join(uploadPath, ...fileLink.split('/')))).toString();
+    const ext = path.extname(fileLink);
 
-    res.render('editor.hbs', { fileLink, file, DEFAULT_CONFIG });
+    if (ext === '.html' || ext === '.css' || ext === '.js' || ext === '.txt') {
+        const file = (await fs.readFile(path.join(uploadPath, ...fileLink.split('/')))).toString();
+
+        res.render('editor.hbs', { fileLink, file, DEFAULT_CONFIG });
+        return;
+    }
+
+    if (ext === '.png' || ext === '.jpg' || ext === '.jpeg') {
+        const imagePath = getCurrentPath(fileLink);
+
+        res.render('image.hbs', { fileLink, imagePath });
+        return;
+    }
+
+    res.render('error.hbs', { message: 'This file is not editable' })
 })
 
 app.get('/getConfig', async (_req, res) => {
