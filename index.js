@@ -212,7 +212,7 @@ app.get('/showFile', async (req, res) => {
     const fileLink = req.query.name;
     const file = (await fs.readFile(path.join(uploadPath, ...fileLink.split('/')))).toString();
 
-    res.render('editor.hbs', { fileLink, file, DEFAULT_CONFIG })
+    res.render('editor.hbs', { fileLink, file, DEFAULT_CONFIG });
 })
 
 app.get('/getConfig', async (_req, res) => {
