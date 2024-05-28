@@ -235,22 +235,6 @@ app.post('/setConfig', async (req, res) => {
     res.status(200).send('ok');
 })
 
-// app.get('/show', (req, res) => {
-//     const { id: reqID } = req.query;
-//     const file = savedFiles.filter(({ id }) => id === parseInt(reqID))[0];
-
-//     res.sendFile(file.file.path);
-// })
-
-
-// app.get('/download', (req, res) => {
-//     const { id: reqID } = req.query;
-//     const file = savedFiles.filter(({ id }) => id === parseInt(reqID))[0];
-
-//     res.download(file.file.path);
-// })
-
-
 app.post('/newDir', async (req, res) => {
     const { body: { dirName, currentDir } } = req;
 
