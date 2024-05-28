@@ -1,13 +1,20 @@
 <div class="flex w-full min-h-dvh">
-    {{> editor/settings}}
+    {{> editor/settings fileLink=fileLink}}
     <div class="divider divider-horizontal"></div>
     <div class="flex-1 flex flex-col">
         {{> editor/fileLink fileLink=fileLink}}
         <div class="divider divider-vertical"></div>
         <form action="/editFile" method="POST" class="flex-1 flex flex-col gap-4">
-            <div id="editor" class="flex">
-                <div class="numbers flex flex-col" id="numbers"></div>
-                <textarea class="flex-1 resize-none" id="textarea" onchange="onUpdate(event.target.value)">{{file}}</textarea>
+            <div id="editor" class="flex focus-within:outline focus-within:outline-2 focus-within:outline-blue-400">
+                <div class="numbers flex flex-col w-12 px-1" id="numbers"></div>
+                <textarea
+                    class="flex-1 resize-none whitespace-pre focus:outline-none"
+                    id="textarea"
+                    oninput="onUpdate(event.target.value)"
+                    name="fileContent"
+                    spellcheck="false"
+                >{{file}}</textarea>
+                <input type="hidden" name="fileLink" value={{fileLink}} />
             </div>
             <button type="submit" class="btn btn-primary">save file</button>
         </form>
@@ -15,7 +22,6 @@
 </div>
 
 <script>
-
     let config = {
         theme: 'light',
         fontSize: 16,
@@ -43,7 +49,8 @@
     }
 
     function onUpdate(value) {
-        // tu cos nie dziala
+        const textarea = document.querySelector('#textarea');
+
         const lines = textarea.value.split('\n').length;
         setLines(lines);
     }
@@ -59,16 +66,19 @@
         for (let i = 1; i < lines + 1; i++) {
             const number = document.createElement('span');
             number.innerText = i;
-            console.log(number)
             numbers.appendChild(number);
         }
     }
 
     function update() {
         const editor = document.querySelector('#editor');
+        const textarea = document.querySelector('#textarea');
+
+        const lines = textarea.value.split('\n').length;
         
         editor.setAttribute('data-theme', config.theme);
         editor.style.fontSize = `${config.fontSize}px`;
+        editor.style.height = `${config.fontSize * 1.5 * lines}px`;
     }
 
     function increaseFontSize() {

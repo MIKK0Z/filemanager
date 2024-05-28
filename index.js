@@ -168,6 +168,16 @@ console.log(helloWorld);`
     return '';
 }
 
+const getFileLink = (currentDir, fileName) => {
+    const ext = path.extname(fileName);
+
+    if (ext === '.html' || ext === '.css' || ext === '.js' || ext === '.txt') {
+        return `${currentDir}${currentDir === '/' ? '' : '/'}${fileName}`;
+    }
+
+    return null;
+}
+
 app.get('/', (_req, res) => {
     res.redirect('/filemanager');
 })
@@ -187,7 +197,7 @@ app.get('/filemanager', async (req, res) => {
         const files = (await getFiles(currentDir)).map((name) => {
             return {
                 name,
-                link: `${currentDir}${currentDir === '/' ? '' : '/'}${name}`,
+                link: getFileLink(currentDir, name),
                 path: path.join(...currentDir.split('/'), name),
             };
         });
@@ -200,12 +210,7 @@ app.get('/filemanager', async (req, res) => {
 
 app.get('/showFile', async (req, res) => {
     const fileLink = req.query.name;
-
-    // console.log(fileLink)
-
     const file = (await fs.readFile(path.join(uploadPath, ...fileLink.split('/')))).toString();
-
-    // console.log(typeof file);
 
     res.render('editor.hbs', { fileLink, file, DEFAULT_CONFIG })
 })
@@ -383,6 +388,31 @@ app.post('/changeDirName', async (req, res) => {
     await fs.rename(currentPath, newDirPath);
 
     res.redirect(`/filemanager?name=${newDirPath.split('upload')[1]?.split(path.sep)?.join('/') ?? '/'}`);
+})
+
+app.post('/editFile', async (req, res) => {
+    const { body: { fileContent, fileLink }} = req;
+
+    const filePath = getCurrentPath(fileLink);
+    await fs.writeFile(filePath, fileContent);
+
+    const urlName = fileLink.split('/').slice(0, -1).join('/');
+
+    res.redirect(`/filemanager?name=${urlName}`);
+})
+
+app.post('/renameFile', async (req, res) => {
+    const { body: { fileName, fileLink }} = req;
+
+    const ext = path.extname(fileLink);
+    const filePath = getCurrentPath(fileLink);
+    
+    const newFileLink = [...fileLink.split('/').slice(0, -1), `${fileName}${ext}`].join('/');
+    const newFilePath = getCurrentPath(newFileLink);
+
+    await fs.rename(filePath, newFilePath);
+
+    res.redirect(`/showFile?name=${newFileLink}`);
 })
 
 app.set('views', path.join(__dirname, 'views'));
