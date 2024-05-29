@@ -5,6 +5,7 @@ import path from 'path';
 import fs from 'fs/promises';
 import { existsSync } from "fs";
 import mime from 'mime-types';
+import sizeOf from 'image-size'
 
 const PORT = 3000;
 const MAX_FILENAME_LENGTH = 32;
@@ -225,7 +226,10 @@ app.get('/showFile', async (req, res) => {
     if (ext === '.png' || ext === '.jpg' || ext === '.jpeg') {
         const imagePath = getCurrentPath(fileLink);
 
-        res.render('image.hbs', { fileLink, imagePath });
+        const filters = ['grayscale', 'invert', 'sepia'];
+        const { width, height } = sizeOf(imagePath);
+
+        res.render('image.hbs', { fileLink, imagePath, filters, imageSize: { width, height } });
         return;
     }
 
