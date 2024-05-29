@@ -139,7 +139,7 @@ const getParentPath = (currentPath) => {
 const getDefaultFileContent = (ext) => {
     if (ext === '.html') {
         return (
-`<!DOCTYPE html>
+            `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -154,20 +154,20 @@ const getDefaultFileContent = (ext) => {
     }
     if (ext === '.css') {
         return (
-`*,
+            `*,
 ::before,
 ::after {
     box-sizing: border-box;
-}`          
+}`
         );
     }
     if (ext === '.js') {
         return (
-`const helloWorld = document.querySelector('#helloWorld');
-console.log(helloWorld);`     
+            `const helloWorld = document.querySelector('#helloWorld');
+console.log(helloWorld);`
         );
     }
-    
+
     return '';
 }
 
@@ -240,13 +240,13 @@ app.get('/getConfig', async (_req, res) => {
         await fs.writeFile(configPath, JSON.stringify(DEFAULT_CONFIG, null, 4));
         config = JSON.parse((await fs.readFile(configPath)).toString());
     }
-    
+
     res.json(config);
 })
 
 app.post('/setConfig', async (req, res) => {
     const { theme, fontSize } = req.body;
-    
+
     await fs.writeFile(configPath, JSON.stringify({ theme, fontSize }, null, 4))
 
     res.status(200).send('ok');
@@ -326,7 +326,7 @@ app.post('/upload', (req, res) => {
 
             if (!invalidFiles) {
                 await Promise.all(uploadedFiles.map(async (file) => {
-                    const fileName = await getNewFileName(file.name);
+                    const fileName = await getNewFileName(file.name, currentDir);
                     const currentPath = path.join(uploadPath, ...currentDir.split('/'));
                     const newFilePath = path.join(currentPath, fileName);
                     await fs.rename(file.path, newFilePath);
@@ -392,7 +392,7 @@ app.post('/changeDirName', async (req, res) => {
 })
 
 app.post('/editFile', async (req, res) => {
-    const { body: { fileContent, fileLink }} = req;
+    const { body: { fileContent, fileLink } } = req;
 
     const filePath = getCurrentPath(fileLink);
     await fs.writeFile(filePath, fileContent);
@@ -403,17 +403,23 @@ app.post('/editFile', async (req, res) => {
 })
 
 app.post('/renameFile', async (req, res) => {
-    const { body: { fileName, fileLink }} = req;
+    const { body: { fileName, fileLink } } = req;
 
     const ext = path.extname(fileLink);
     const filePath = getCurrentPath(fileLink);
-    
+
     const newFileLink = [...fileLink.split('/').slice(0, -1), `${fileName}${ext}`].join('/');
     const newFilePath = getCurrentPath(newFileLink);
 
     await fs.rename(filePath, newFilePath);
 
     res.redirect(`/showFile?name=${newFileLink}`);
+})
+
+app.get('/previewFile', (req, res) => {
+    const { name } = req.query;
+
+    res.sendFile(getCurrentPath(name));
 })
 
 app.set('views', path.join(__dirname, 'views'));
