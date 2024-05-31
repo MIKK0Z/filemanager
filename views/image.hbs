@@ -2,16 +2,24 @@
     {{> image/settings fileLink=fileLink}}
     <div class="divider divider-horizontal"></div>
     <div class="flex-1 flex flex-col">
-        {{> utils/fileLink fileLink=fileLink}}
+        <div class="flex justify-between items-center">
+            {{> utils/fileLink fileLink=fileLink}}
+            <p>[{{imageSize.width}}x{{imageSize.height}}]</p>
+            {{> utils/returnBtn parentLink=parentLink}}
+        </div>
         <div class="divider divider-vertical"></div>
         <div class="flex-1 flex">
             <div id="panel" style="width: 0px;" class="flex justify-between duration-300 overflow-hidden">
                 <div>
-                    skibidi
+                    {{#each filters}}
+                        {{> image/filterBtn filter=this fileLink=fileLink}}
+                    {{/each}}
                 </div>
                 <div class="divider divider-horizontal"></div>
             </div>
-            <img src={{fileLink}} alt={{fileLink}} style="width: 100px; height: 100px;" />
+            <div class="grid place-items-center">
+                <img src={{fileLink}} alt={{fileLink}} class="aspect-square h-1/2" id="image" />
+            </div>
         </div>
     </div>
 </div>
@@ -21,5 +29,15 @@
         const panel = document.querySelector('#panel');
         const currWidth = panel.style.width;
         panel.style.width = currWidth === '0px' ? '16rem' : '0px';
+    }
+    
+    function changeFilter(filter) {
+        const image = document.querySelector('#image');
+
+        if (filter === 'none') {
+            image.style.filter = 'none';
+        } else {
+            image.style.filter = `${filter}(100%)`;
+        }
     }
 </script>

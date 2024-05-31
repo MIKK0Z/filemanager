@@ -218,15 +218,18 @@ app.get('/showFile', async (req, res) => {
 
     if (ext === '.html' || ext === '.css' || ext === '.js' || ext === '.txt') {
         const file = (await fs.readFile(path.join(uploadPath, ...fileLink.split('/')))).toString();
+        const parentLink = fileLink.split('/').slice(0, -1).join('/');
 
-        res.render('editor.hbs', { fileLink, file, DEFAULT_CONFIG });
+        console.log(parentLink)
+
+        res.render('editor.hbs', { fileLink, file, DEFAULT_CONFIG, parentLink });
         return;
     }
 
     if (ext === '.png' || ext === '.jpg' || ext === '.jpeg') {
         const imagePath = getCurrentPath(fileLink);
 
-        const filters = ['grayscale', 'invert', 'sepia'];
+        const filters = ['grayscale', 'invert', 'sepia', 'none'];
         const { width, height } = sizeOf(imagePath);
 
         res.render('image.hbs', { fileLink, imagePath, filters, imageSize: { width, height } });
@@ -423,6 +426,7 @@ app.post('/renameFile', async (req, res) => {
 app.get('/previewFile', (req, res) => {
     const { name } = req.query;
 
+    res.set({ 'Content-Type': 'text/plain' })
     res.sendFile(getCurrentPath(name));
 })
 
