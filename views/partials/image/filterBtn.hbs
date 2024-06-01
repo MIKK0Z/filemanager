@@ -1,5 +1,4 @@
-<div onclick="changeFilter('{{filter}}')" class="cursor-pointer">
-	<img src={{fileLink}} />
-	{{filter}}
-	{{fileLink}}
+<div onclick="changeFilter('{{filter}}')" class="cursor-pointer flex flex-col items-center gap-1">
+	<h3>{{filter}}</h3>
+	<img src={{fileLink}} alt={{fileLink}} style="filter: {{filter}}{{#if (notEquals filter 'none')}}(100%){{/if}};" class="h-32 max-w-32" />
 </div>

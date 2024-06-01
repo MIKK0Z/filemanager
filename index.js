@@ -220,19 +220,18 @@ app.get('/showFile', async (req, res) => {
         const file = (await fs.readFile(path.join(uploadPath, ...fileLink.split('/')))).toString();
         const parentLink = fileLink.split('/').slice(0, -1).join('/');
 
-        console.log(parentLink)
-
         res.render('editor.hbs', { fileLink, file, DEFAULT_CONFIG, parentLink });
         return;
     }
 
     if (ext === '.png' || ext === '.jpg' || ext === '.jpeg') {
         const imagePath = getCurrentPath(fileLink);
+        const parentLink = fileLink.split('/').slice(0, -1).join('/');
 
         const filters = ['grayscale', 'invert', 'sepia', 'none'];
         const { width, height } = sizeOf(imagePath);
 
-        res.render('image.hbs', { fileLink, imagePath, filters, imageSize: { width, height } });
+        res.render('image.hbs', { fileLink, imagePath, filters, imageSize: { width, height }, parentLink });
         return;
     }
 
@@ -249,6 +248,11 @@ app.get('/getConfig', async (_req, res) => {
     }
 
     res.json(config);
+})
+
+app.get('/previewFile', (req, res) => {
+    const { name } = req.query;
+    res.sendFile(getCurrentPath(name));
 })
 
 app.post('/setConfig', async (req, res) => {
@@ -313,7 +317,7 @@ app.post('/newFile', async (req, res) => {
 })
 
 app.post('/upload', (req, res) => {
-    let form = formidable({});
+    const form = formidable({});
     form.uploadDir = uploadPath;
     form.keepExtensions = true;
     form.multiples = true;
@@ -423,11 +427,22 @@ app.post('/renameFile', async (req, res) => {
     res.redirect(`/showFile?name=${newFileLink}`);
 })
 
-app.get('/previewFile', (req, res) => {
-    const { name } = req.query;
+app.post('/saveImage', async (req, res) => {
+    const form = formidable({});
+    form.uploadDir = uploadPath;
+    form.keepExtensions = true;
+    form.multiples = true;
 
-    res.set({ 'Content-Type': 'text/plain' })
-    res.sendFile(getCurrentPath(name));
+    form.parse(req, async (_err, fields, files) => {
+        const { fileLink } = fields;
+        const { blob } = files;
+
+        const filePath = getCurrentPath(fileLink);
+
+        await fs.rename(blob.path, filePath)
+    })
+
+    res.status(200).send('ok');
 })
 
 app.set('views', path.join(__dirname, 'views'));
@@ -479,6 +494,9 @@ app.engine('hbs', hbs({
 
             return elementName;
         },
+        notEquals: (val1, val2) => {
+            return val1 !== val2;
+        }
     },
     partialsDir: 'views/partials',
 }));

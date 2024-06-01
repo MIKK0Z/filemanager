@@ -2,6 +2,9 @@
     <button type="button" class="btn btn-neutral w-full" onclick="toggleFilters()">
         filters
     </button>
+	<button type="button" class="btn btn-neutral w-full" onclick="saveImage()">
+		save with filter
+	</button>
         
     <div class="divider divider-vertical"></div>
     
@@ -27,7 +30,7 @@
 				<button class="btn">cancel</button>
 			</form>
 			<form method="POST" action="/renameFile" id="newFile">
-				<input type="hidden" name="fileLink", value={{fileLink}} />
+				<input type="hidden" name="fileLink" value={{fileLink}} />
 				<button type="submit" class="btn btn-neutral w-full" id="renameFileBtn" disabled>
 					rename
 				</button>

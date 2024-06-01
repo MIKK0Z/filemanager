@@ -10,15 +10,15 @@
         <div class="divider divider-vertical"></div>
         <div class="flex-1 flex">
             <div id="panel" style="width: 0px;" class="flex justify-between duration-300 overflow-hidden">
-                <div>
+                <div class="space-y-4 mx-auto">
                     {{#each filters}}
-                        {{> image/filterBtn filter=this fileLink=fileLink}}
+                        {{> image/filterBtn filter=this fileLink=../fileLink}}
                     {{/each}}
                 </div>
                 <div class="divider divider-horizontal"></div>
             </div>
-            <div class="grid place-items-center">
-                <img src={{fileLink}} alt={{fileLink}} class="aspect-square h-1/2" id="image" />
+            <div class="grid place-items-center flex-1">
+                <img src={{fileLink}} alt={{fileLink}} class="max-h-2/3 max-w-2/3" id="image" />
             </div>
         </div>
     </div>
@@ -28,7 +28,7 @@
     function toggleFilters() {
         const panel = document.querySelector('#panel');
         const currWidth = panel.style.width;
-        panel.style.width = currWidth === '0px' ? '16rem' : '0px';
+        panel.style.width = currWidth === '0px' ? '12rem' : '0px';
     }
     
     function changeFilter(filter) {
@@ -38,6 +38,37 @@
             image.style.filter = 'none';
         } else {
             image.style.filter = `${filter}(100%)`;
+        }
+    }
+
+    function saveImage() {
+        const imageDisplay = document.querySelector('#image');
+        const filter = imageDisplay.style.filter || 'none';
+
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        const image = new Image();
+        image.src = '{{fileLink}}';
+
+        image.onload = () => {
+            canvas.width = image.width;
+            canvas.height = image.height;
+            ctx.filter = filter;
+            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob(async (blob) => {
+                const formData = new FormData();
+                formData.append('blob', blob);
+                formData.append('fileLink', '{{ fileLink }}');
+
+                await fetch('/saveImage', {
+                    method: 'POST',
+                    body: formData,
+                })
+
+                location.reload();
+            })
         }
     }
 </script>
