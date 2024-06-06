@@ -12,11 +12,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cookie-parser": "^1.4.6",
     "express": "^4.19.2",
     "express-handlebars": "^5.3.5",
     "formidable": "1.2.2",
     "image-size": "^1.1.1",
-    "mime-types": "^2.1.35"
+    "mime-types": "^2.1.35",
+    "nocache": "^4.0.0",
+    "uuidv4": "^6.2.13"
   },
   "devDependencies": {
     "daisyui": "^4.10.2",

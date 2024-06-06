@@ -5,7 +5,10 @@ import path from 'path';
 import fs from 'fs/promises';
 import { existsSync } from "fs";
 import mime from 'mime-types';
-import sizeOf from 'image-size'
+import sizeOf from 'image-size';
+import cookieParser from 'cookie-parser';
+import nocache from 'nocache';
+import { uuid } from 'uuidv4';
 
 const PORT = 3000;
 const MAX_FILENAME_LENGTH = 32;
@@ -20,6 +23,8 @@ const DEFAULT_CONFIG = {
 
 const app = express();
 
+const users = [];
+
 app.use(express.static('static'));
 app.use(express.static('upload'));
 
@@ -27,6 +32,8 @@ app.use(express.urlencoded({
     extended: true,
 }))
 app.use(express.json());
+app.use(cookieParser());
+app.use(nocache());
 
 if (!existsSync(uploadPath)) {
     await fs.mkdir(uploadPath);
@@ -183,10 +190,114 @@ const getFileLink = (currentDir, fileName) => {
 }
 
 app.get('/', (_req, res) => {
+    res.redirect('/login');
+})
+
+app.get('/register', (req, res) => {
+    const loginCookie = req.cookies.login;
+    if (loginCookie) {
+        const userData = JSON.parse(loginCookie);
+        const user = users.find((user) => (user.username === userData.username && user.password === userData.password));
+        if (user) {
+            res.redirect('/filemanager');
+            return;
+        }
+    }
+    res.render('register.hbs');
+})
+
+app.post('/register', (req, res) => {
+    const { username, password, repeatPassword } = req.body;
+
+    if (!username || typeof username !== 'string') {
+        res.render('error.hbs', { message: 'Username cannot be empty' });
+        return;
+    }
+
+    if (!password || typeof password !== 'string') {
+        res.render('error.hbs', { message: 'Password cannot be empty' });
+        return;
+    }
+
+    if (password !== repeatPassword) {
+        res.render('error.hbs', { message: 'Passwords don\'t match' });
+        return;
+    }
+
+    if (users.filter((user) => user.username === username).length !== 0) {
+        res.render('error.hbs', { message: 'User exists' });
+        return;
+    }
+
+    users.push({ username, password });
+
+    res.redirect('/login');
+})
+
+app.get('/login', (req, res) => {
+    const loginCookie = req.cookies.login;
+    if (loginCookie) {
+        const userData = JSON.parse(loginCookie);
+        const user = users.find((user) => (user.username === userData.username && user.password === userData.password));
+        if (user) {
+            res.redirect('/filemanager');
+            return;
+        }
+    }
+
+    res.render('login.hbs');
+})
+
+app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+
+    const user = users.find((user) => (user.username === username && user.password === password));
+
+    if (!user) {
+        res.render('error.hbs', { message: 'Wrong credentials' });
+        return;
+    }
+
+    const userUUID = uuid();
+
+    res.cookie('login', JSON.stringify({ username, password, uuid: userUUID }), { httpOnly: true, maxAge: 30 * 1000 });
     res.redirect('/filemanager');
 })
 
+app.get('/logout', (req, res) => {
+    const loginCookie = req.cookies.login;
+    if (!loginCookie) {
+        res.redirect('/login');
+        return;
+    }
+
+    const userData = JSON.parse(loginCookie);
+    const user = users.find((user) => (user.username === userData.username && user.password === userData.password));
+    if (!user) {
+        res.redirect('/login');
+    }
+
+    res.render('logout.hbs');
+})
+
+app.post('/logout', (_req, res) => {
+    res.clearCookie('login');
+    res.redirect('/login');
+})
+
 app.get('/filemanager', async (req, res) => {
+    const loginCookie = req.cookies.login;
+    if (!loginCookie) {
+        res.redirect('/login');
+        return;
+    }
+
+    const userData = JSON.parse(loginCookie);
+    const user = users.find((user) => (user.username === userData.username && user.password === userData.password));
+    if (!user) {
+        res.redirect('/login');
+    }
+
     const currentDir = req.query.name ?? '/';
     const subDirs = getSubDirs(currentDir);
 
@@ -213,6 +324,18 @@ app.get('/filemanager', async (req, res) => {
 })
 
 app.get('/showFile', async (req, res) => {
+    const loginCookie = req.cookies.login;
+    if (!loginCookie) {
+        res.redirect('/login');
+        return;
+    }
+
+    const userData = JSON.parse(loginCookie);
+    const user = users.find((user) => (user.username === userData.username && user.password === userData.password));
+    if (!user) {
+        res.redirect('/login');
+    }
+
     const fileLink = req.query.name;
     const ext = path.extname(fileLink);
 
@@ -238,7 +361,19 @@ app.get('/showFile', async (req, res) => {
     res.render('error.hbs', { message: 'This file is not editable' })
 })
 
-app.get('/getConfig', async (_req, res) => {
+app.get('/getConfig', async (req, res) => {
+    const loginCookie = req.cookies.login;
+    if (!loginCookie) {
+        res.redirect('/login');
+        return;
+    }
+
+    const userData = JSON.parse(loginCookie);
+    const user = users.find((user) => (user.username === userData.username && user.password === userData.password));
+    if (!user) {
+        res.redirect('/login');
+    }
+
     let config = null;
     try {
         config = JSON.parse((await fs.readFile(configPath)).toString());
@@ -251,6 +386,18 @@ app.get('/getConfig', async (_req, res) => {
 })
 
 app.get('/previewFile', (req, res) => {
+    const loginCookie = req.cookies.login;
+    if (!loginCookie) {
+        res.redirect('/login');
+        return;
+    }
+
+    const userData = JSON.parse(loginCookie);
+    const user = users.find((user) => (user.username === userData.username && user.password === userData.password));
+    if (!user) {
+        res.redirect('/login');
+    }
+
     const { name } = req.query;
     res.sendFile(getCurrentPath(name));
 })
