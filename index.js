@@ -260,7 +260,7 @@ app.post('/login', (req, res) => {
 
     const userUUID = uuid();
 
-    res.cookie('login', JSON.stringify({ username, password, uuid: userUUID }), { httpOnly: true, maxAge: 30 * 1000 });
+    res.cookie('login', JSON.stringify({ username, password, uuid: userUUID }), { httpOnly: true, maxAge: 60 * 60 * 1000 });
     res.redirect('/filemanager');
 })
 
